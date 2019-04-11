@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/m-masataka/grafana-simplejson-mongo/mongodb"
+	"github.com/luizalabs/grafana-simplejson-mongo/mongodb"
 )
 
 type TSQuery struct {
@@ -34,7 +34,7 @@ func (conf *Config) reqQuery(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&result); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
-	sp := mongodb.NewSession(conf.MongoHost)
+	sp := mongodb.NewSession(conf.MongoHosts[conf.CurrentHostIndex])
 	var q TSQuery
 	err := q.parseRangeRaw(result.RangeRaw.From, result.RangeRaw.To)
 	if err != nil {
@@ -91,6 +91,10 @@ func (conf *Config) reqQuery(w http.ResponseWriter, r *http.Request) {
 	resbytes = resbytes[:len(resbytes)-1]
 	resbytes = append(resbytes, []byte("]")...)
 	w.Write(resbytes)
+	conf.CurrentHostIndex++
+	if conf.CurrentHostIndex >= len(conf.MongoHosts) {
+		conf.CurrentHostIndex = 0
+	}
 }
 
 var (
