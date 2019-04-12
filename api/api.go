@@ -8,8 +8,9 @@ import (
 )
 
 type Config struct {
-	Port      int
-	MongoHost string
+	Port             int
+	MongoHosts       []string
+	CurrentHostIndex int
 }
 
 func httpServer(conf Config) http.Handler {
